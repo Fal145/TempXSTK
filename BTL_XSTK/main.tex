@@ -1,0 +1,88 @@
+\documentclass{article}
+\input{setup.tex}
+%------------------------- body -------------------------%
+\begin{document}
+
+%-------------------- cover --------------------%
+\begin{titlepage}
+\begin{center}
+    \large ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH \\
+    TRƯỜNG ĐẠI HỌC BÁCH KHOA \\
+    KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH
+\end{center}
+
+\vspace{1.5cm}
+
+\begin{figure}[!ht]
+    \centering \includegraphics[width=3.5cm]{hcmut_logo.png}
+\end{figure}
+
+\vspace{1.5cm}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c}
+    {\bf \Large XÁC SUẤT THỐNG KÊ} \\ \\
+    \hline  \\
+    \multicolumn{1}{l}{{\bf \large Bài tập lớn}}    \\  \\
+    {\bf \huge TỔNG QUAN VỀ HIỆU NĂNG }     \\  
+    
+    \hline
+    \end{tabular}
+\end{table}
+
+\vspace{1.5cm}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrlc}
+\hspace{5.5 cm} & Giảng viên hướng dẫn: & Nguyễn Đình Huy   & \\
+                & Sinh viên thực hiện:  & Võ Huỳnh Anh Thư    & 2213416 \\
+                &   &  &  \\
+                &   &   & \\
+                &   &  & \\
+                
+        
+\end{tabular}
+\textbf{\textit{}}\end{table}
+
+\vspace{1.0cm}
+
+\begin{center}
+    \footnotesize Tp. Hồ Chí Minh, Tháng 10/2026
+\end{center}
+\end{titlepage}
+
+\newpage
+%-------------------- mission --------------------%
+%\renewcommand{\arraystretch}{2}
+
+%-------------------- contents --------------------%
+\tableofcontents
+\newpage
+\input{sections/Danh sách thành viên}
+\newpage
+\input{sections/Tổng quan dữ liệu}
+\newpage
+\input{sections/Kiến thức nền}
+\newpage
+\input{sections/Tiền xử lí số liệu}
+\newpage
+\input{sections/Thống kê mô tả}
+\newpage
+\input{sections/Thống kê suy diễn}
+\newpage
+\input{sections/Thảo luận và mở rộng}
+\newpage
+\input{sections/Nguồn dữ liệu và nguồn code}
+\newpage
+%-------------------- main --------------------%
+
+\phantomsection
+% \addcontentsline{toc}{section}{Tài liệu tham khảo}
+% \renewcommand{\refname}{Tài liệu tham khảo}
+\nocite{*}
+\bibliographystyle{apalike}
+\bibliography{reference}
+
+\end{document}

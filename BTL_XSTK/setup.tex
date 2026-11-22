@@ -1,0 +1,138 @@
+%------------------------- packages -------------------------%
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{vietnam}
+\usepackage[unicode,hidelinks]{hyperref}    % for reference
+\usepackage{geometry}   % for layout
+\usepackage{amsmath}    % for math
+\usepackage{xcolor}     % for color
+% for figure
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{caption}    
+% for code
+\usepackage{minted}
+\usepackage[normalem]{ulem}
+% for table
+\usepackage{float}      
+\usepackage{paracol}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{amssymb}
+% for header & footer 
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+%\usepackage{CJKutf8}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+\usepackage{listings}
+\usepackage{tabularx}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+% Cấu hình python trong latex
+\newtcblisting{pythoncode}{
+    breakable,
+    boxrule=0pt,
+    frame hidden,
+    colback=gray!6!white,
+    arc=2mm,
+    top=2mm, bottom=2mm, left=2mm, right=2mm,
+    listing only,
+    listing options={
+        language=Python,
+        basicstyle=\ttfamily\footnotesize,
+        keywordstyle=\color{blue}\bfseries,
+        commentstyle=\color{dkgreen}\itshape,
+        stringstyle=\color{mauve},
+        breaklines=true,
+        showstringspaces=false,
+        tabsize=4,
+        inputencoding=utf8,
+        extendedchars=true
+    }
+}
+
+% Cách dùng trong bài:
+%\begin{pythoncode}{Giai đoạn 1: Trích lọc tập biến quan tâm}
+%import pandas as pd
+%df_raw = pd.read_csv('data/All_GPUs.csv')
+%\end{pythoncode}
+
+\lstset{frame=tb,
+    language=Python,
+    aboveskip=3mm,
+    belowskip=3mm,
+    showstringspaces=false,
+    columns=flexible,
+    basicstyle={\small\ttfamily},
+    numbers=none,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{dkgreen},
+    stringstyle=\color{mauve},
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=3,
+}
+
+%------------------------- set up -------------------------%
+% figure
+\graphicspath{{./img/}}              % path to image
+\captionsetup[figure]{labelfont={small,bf,it},textfont={small,it}}
+% paragraph
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}               % disables indentation
+\renewcommand{\baselinestretch}{1.5}    % line spacing
+% color
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+% code
+\def\code#1{\texttt{#1}}    % font
+\usemintedstyle{vs}         % minted theme
+\setminted{
+    autogobble,             % remove all common leading whitespace
+    baselinestretch=1.0,
+    bgcolor=gray!5!white,
+    breaklines,
+    %linenos,               % enables line numbers
+    fontsize=\footnotesize
+}
+
+%------------------------- layout & margin -------------------------%
+\geometry{
+    a4paper,        % redundant if already in \documentclass
+    left=20.32mm,
+    right=20.32mm,
+    top=25.40mm,
+    bottom=25.40mm,
+    heightrounded,  % better use it
+}
+
+%------------------------- header & footer -------------------------%
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+\setlength{\headheight}{24.5pt}
+\pagestyle{fancy}
+
+\fancyhead{}    % clear all header fields
+\fancyhead[L]{
+    \begin{tabular}{ll}
+        \begin{picture}(10,10)
+            \put(0,-7){\includegraphics[width=8mm]{hcmut_logo.png}}
+        \end{picture}&
+    	\begin{tabular}{l}
+    	    {\ttfamily Trường Đại học Bách Khoa Tp. Hồ Chí Minh} \\
+    	    {\ttfamily Khoa Khoa học và Kỹ thuật Máy tính} \\
+    	\end{tabular} 	
+    \end{tabular}
+}
+
+\fancyfoot{}    % clear all footer fields
+\fancyfoot[L]{\footnotesize {\ttfamily Báo cáo BTL Xác suất thống kê}}
+\fancyfoot[R]{\footnotesize {\ttfamily Trang {\thepage}/\pageref{LastPage}}}
+% might change to \scriptsize
+
+
+% addtional fix
