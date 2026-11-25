@@ -102,163 +102,341 @@
         \end{itemize}
 
 
-    \subsection{Hồi quy tuyến tính bội: phân tích và dự đoán tốc độ xung nhịp}
+\subsection{Phân tích sự tác động của các yếu tố lên hiệu năng GPUs}
 
-        Phần ANOVA và phần hồi quy dùng hai tập phân tích khác nhau. ANOVA chỉ cần \texttt{Name}, \texttt{Manufacturer} và \texttt{Core\_Speed}, nên có $N=2{,}469$ GPU sau khi loại dữ liệu thiếu và trùng tên. Hồi quy cần đủ cả 9 thông số phần cứng; từ 3.406 dòng dữ liệu gốc, quy trình loại dòng thiếu còn 2.019 dòng, sau đó loại một tên trùng còn $N=2{,}018$. Vì vậy, cỡ mẫu của hai phân tích không giống nhau.
+\subsubsection{Mục tiêu và cơ sở lựa chọn Mô hình 3}
 
-        \subsubsection{Mục tiêu và so sánh mô hình}
+Để tái lập kết quả hồi quy đã báo cáo, tập này được tạo riêng bằng cách trích phần số của 9 biến, loại dòng thiếu, rồi loại các dòng trùng trên cả 9 thông số; tập thu được có $N=1{,}420$. Quy trình này khác với tập dùng cho thống kê mô tả.
 
-        Nhóm xây dựng ba mô hình để giải thích \texttt{Core\_Speed}. Mô hình 1 và 2 dùng thang đo gốc; Mô hình 3 lấy log tự nhiên cho biến phụ thuộc và cả 8 biến độc lập. Các mô hình được ước lượng trên cùng 2.018 quan sát.
+Nhóm so sánh ba mô hình hồi quy nhằm lựa chọn mô hình phù hợp để phân tích và dự đoán \texttt{Core\_Speed}. Kết quả được trình bày trong Bảng~\ref{tab:so-sanh-mo-hinh}.
 
-        \begin{table}[H]
-        \centering
-        \scriptsize
-        \renewcommand{\arraystretch}{1.2}
-        \begin{tabularx}{\textwidth}{@{}X c c c c c@{}}
-        \toprule
-        \textbf{Mô hình} & \textbf{Số biến} & \textbf{$R^2$} & \textbf{$R^2$ hiệu chỉnh} & \textbf{RSE} & \textbf{$F$-statistic ($p$)} \\
-        \midrule
-        Mô hình 1 (thang gốc) & 7 & 0.7084 & 0.7074 & 138.6 & $697.5$ ($<2.2\times10^{-16}$) \\
-        Mô hình 2 (thang gốc) & 6 & 0.6108 & 0.6096 & 160.1 & $525.9$ ($<2.2\times10^{-16}$) \\
-        Mô hình 3 (log-log) & 8 & 0.7409 & 0.7399 & 0.1371 & $718.3$ ($<2.2\times10^{-16}$) \\
-        \bottomrule
-        \end{tabularx}
-        \caption{Kết quả khớp ba mô hình hồi quy ($N=2{,}018$)}
-        \label{tab:model-comparison}
-        \end{table}
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\caption{So sánh độ phù hợp giữa ba mô hình hồi quy ($n=1{,}420$)}
+\label{tab:so-sanh-mo-hinh}
+\begin{tabularx}{\textwidth}{@{}p{2.5cm} X c c p{2.7cm}@{}}
+\toprule
+\textbf{Mô hình} & \textbf{Số biến độc lập} & \textbf{$R^2$} & \textbf{$R^2$ hiệu chỉnh} & \textbf{F-statistic ($p$-value)} \\
+\midrule
+Mô hình 1 (thang gốc) & 7 (bỏ \texttt{Max\_Power}) & 0.7147 & 0.7133 & 505.28 ($<2.2\times10^{-16}$) \\
+Mô hình 2 (thang gốc) & 6 (bỏ \texttt{Max\_Power}, \texttt{Memory\_Speed}) & 0.6014 & 0.5998 & 355.39 ($<2.2\times10^{-16}$) \\
+Mô hình 3 (log-log) & 8 biến dạng $\ln$ & 0.7354 & 0.7339 & 490.20 ($<2.2\times10^{-16}$) \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-        Mô hình 3 được dùng làm mô hình chính cho phân tích hệ số, chẩn đoán phần dư và đánh giá dự báo. Các giá trị $R^2$ và RSE của Mô hình 1--2 tính trên \texttt{Core\_Speed} ở thang MHz, còn Mô hình 3 tính trên $\ln(\texttt{Core\_Speed})$; do khác thang đo đáp ứng, không nên xem các giá trị này là phép so sánh trực tiếp độ phù hợp. Kiểm định $F$ của Mô hình 3 cho thấy mô hình có ý nghĩa tổng thể, $F(8,2009)=718.3$, $p<2.2\times10^{-16}$.
+\textbf{Nhận xét:} Theo Bảng~\ref{tab:so-sanh-mo-hinh}, Mô hình 3 có $R^2$ hiệu chỉnh cao nhất ($0.7339$), với $\text{RSE}=0.1412$. Vì vậy, nhóm lựa chọn mô hình này để phân tích và dự đoán.
 
-        \subsubsection{Hệ số hồi quy và ý nghĩa thống kê}
+\subsubsection{Kiểm định sự phù hợp chung của mô hình (Kiểm định \texorpdfstring{$F$}{F})}
 
-        Phương trình ước lượng của Mô hình 3 là:
-        \begin{align*}
-        \ln(\texttt{Core\_Speed}) &= 5.628604 + 0.104474\ln(\texttt{Max\_Power}) - 0.032854\ln(\texttt{Memory\_Bandwidth}) \\
-        &\quad + 0.033241\ln(\texttt{Memory}) + 0.312826\ln(\texttt{Memory\_Speed}) \\
-        &\quad - 0.102021\ln(\texttt{Memory\_Bus}) - 0.327556\ln(\texttt{Process}) \\
-        &\quad + 0.060888\ln(\texttt{ROPs}) - 0.040243\ln(\texttt{TMUs}).
-        \end{align*}
+Kiểm định F đánh giá ý nghĩa thống kê tổng thể của mô hình tại mức $\alpha=0.05$:
 
-        Vì đây là mô hình log-log, mỗi hệ số biểu thị mức thay đổi phần trăm ước lượng của \texttt{Core\_Speed} khi biến tương ứng tăng $1\%$, giữ các biến khác không đổi. Đây là mối liên hệ có điều kiện trong dữ liệu quan sát, không phải bằng chứng nhân quả.
+\[
+H_0:\beta_1=\cdots=\beta_8=0
+\]
 
-        \begin{table}[H]
-        \centering
-        \scriptsize
-        \renewcommand{\arraystretch}{1.15}
-        \begin{tabularx}{\textwidth}{@{}X r r r l@{}}
-        \toprule
-        \textbf{Biến} & \textbf{Estimate} & \textbf{SE} & \textbf{$t$} & \textbf{$p$-value} \\
-        \midrule
-        Hệ số chặn & 5.628604 & 0.177975 & 31.626 & $<2\times10^{-16}$ \\
-        \texttt{log(Max\_Power)} & 0.104474 & 0.009987 & 10.461 & $<2\times10^{-16}$ \\
-        \texttt{log(Memory\_Bandwidth)} & -0.032854 & 0.012045 & -2.728 & 0.006433 \\
-        \texttt{log(Memory)} & 0.033241 & 0.007022 & 4.734 & $2.36\times10^{-6}$ \\
-        \texttt{log(Memory\_Speed)} & 0.312826 & 0.019291 & 16.216 & $<2\times10^{-16}$ \\
-        \texttt{log(Memory\_Bus)} & -0.102021 & 0.013695 & -7.449 & $1.38\times10^{-13}$ \\
-        \texttt{log(Process)} & -0.327556 & 0.015631 & -20.955 & $<2\times10^{-16}$ \\
-        \texttt{log(ROPs)} & 0.060888 & 0.009758 & 6.240 & $5.34\times10^{-10}$ \\
-        \texttt{log(TMUs)} & -0.040243 & 0.011975 & -3.361 & 0.000792 \\
-        \bottomrule
-        \end{tabularx}
-        \caption{Ước lượng hệ số của Mô hình 3}
-        \label{tab:coeffs-model3}
-        \end{table}
+\[
+H_1:\exists j:\beta_j\neq0
+\]
 
-        Cả 8 biến độc lập đều có ý nghĩa thống kê ở mức $\alpha=0.01$. Các hệ số dương lớn nhất là của \texttt{Memory\_Speed} ($0.312826$) và \texttt{Max\_Power} ($0.104474$); hệ số âm lớn nhất về trị tuyệt đối là của \texttt{Process} ($-0.327556$). Dấu và độ lớn hệ số cần được diễn giải thận trọng do các biến phần cứng có thể tương quan với nhau.
+\textbf{Kết quả:} Mô hình đạt $F=490.2$, $df=(8,1411)$ và $p\text{-value}<2.2\times10^{-16}$. Do đó, bác bỏ $H_0$ và kết luận mô hình có ý nghĩa thống kê tổng thể, giải thích được $73.39\%$ biến thiên của $\log(\texttt{Core\_Speed})$.
 
-        \subsubsection{Đa cộng tuyến}
+\subsubsection{Kiểm định ý nghĩa từng hệ số (Kiểm định \texorpdfstring{$t$}{t})}
 
-        Nhóm dùng hệ số VIF để xem xét mức độ tương quan tuyến tính giữa các biến giải thích.
-        \begin{table}[H]
-        \centering
-        \scriptsize
-        \renewcommand{\arraystretch}{1.15}
-        \begin{tabularx}{0.78\textwidth}{@{}X r@{}}
-        \toprule
-        \textbf{Biến} & \textbf{VIF} \\
-        \midrule
-        \texttt{log(Max\_Power)} & 7.32 \\
-        \texttt{log(Memory\_Bandwidth)} & 16.40 \\
-        \texttt{log(Memory)} & 3.11 \\
-        \texttt{log(Memory\_Speed)} & 4.38 \\
-        \texttt{log(Memory\_Bus)} & 6.54 \\
-        \texttt{log(Process)} & 3.07 \\
-        \texttt{log(ROPs)} & 7.91 \\
-        \texttt{log(TMUs)} & 11.22 \\
-        \bottomrule
-        \end{tabularx}
-        \caption{VIF của các biến độc lập trong Mô hình 3}
-        \label{tab:vif-model3}
-        \end{table}
+Kiểm định t đánh giá ý nghĩa của từng biến độc lập khi giữ các biến còn lại không đổi:
 
-        \texttt{Memory\_Bandwidth} và \texttt{TMUs} có VIF lần lượt là $16.40$ và $11.22$, cho thấy đa cộng tuyến đáng lưu ý. Điều này có thể làm hệ số riêng phần nhạy hơn với dữ liệu và hạn chế việc diễn giải từng hệ số tách biệt.
+\[
+H_0:\beta_j=0;\qquad H_1:\beta_j\neq0
+\]
 
-        \subsubsection{Chẩn đoán phần dư và giả định hồi quy}
+Phương trình hồi quy Mô hình 3:
 
-        \begin{table}[H]
-        \centering
-        \scriptsize
-        \renewcommand{\arraystretch}{1.2}
-        \begin{tabularx}{\textwidth}{@{}p{3.0cm} X X@{}}
-        \toprule
-        \textbf{Nội dung} & \textbf{Kết quả} & \textbf{Diễn giải} \\
-        \midrule
-        Trung bình phần dư & $1.99\times10^{-17}$ & Xấp xỉ 0, phù hợp với tính chất của mô hình OLS có hệ số chặn. \\
-        Shapiro--Wilk & $W=0.94183$, $p<2.2\times10^{-16}$ & Bác bỏ giả thuyết phần dư phân phối chuẩn. \\
-        Breusch--Pagan & $BP=260.82$, $df=8$, $p<2.2\times10^{-16}$ & Có bằng chứng phương sai phần dư thay đổi. \\
-        Durbin--Watson & $DW=1.004$, $p<2.2\times10^{-16}$ & Có tự tương quan dương theo thứ tự dòng; diễn giải thận trọng vì dữ liệu không phải chuỗi thời gian. \\
-        Khoảng cách Cook & Lớn nhất $D=0.3867$ (quan sát 62) & Không có quan sát nào vượt ngưỡng tham khảo $D=1$; vẫn nên xem xét các điểm có ảnh hưởng tương đối lớn. \\
-        \bottomrule
-        \end{tabularx}
-        \caption{Kết quả chẩn đoán Mô hình 3 ($N=2{,}018$)}
-        \label{tab:regression-diagnostics}
-        \end{table}
+\begin{align*}
+\log(\texttt{Core\_Speed}) &= 5.717087 + 0.112752\log(\texttt{Max\_Power})\\
+&\quad -0.042967\log(\texttt{Memory\_Bandwidth})\\
+&\quad +0.031637\log(\texttt{Memory})
++0.316397\log(\texttt{Memory\_Speed})\\
+&\quad -0.091692\log(\texttt{Memory\_Bus})
+-0.369986\log(\texttt{Process})\\
+&\quad +0.090826\log(\texttt{ROPs})
+-0.062690\log(\texttt{TMUs})
+\end{align*}
 
-        Các kiểm định Shapiro--Wilk và Breusch--Pagan cho thấy giả định chuẩn của phần dư và phương sai đồng nhất không được thỏa mãn hoàn toàn. Vì vậy, các kiểm định $t$ và khoảng tin cậy dựa trên sai số chuẩn OLS cần được cân nhắc khi diễn giải; có thể báo cáo thêm sai số chuẩn vững trong phân tích tiếp theo.
+Kết quả ước lượng được tổng hợp trong Bảng~\ref{tab:he-so-model3}.
 
-        \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.88\textwidth]{statisticPros/model3_diagnostics.png}
-        \caption{Bốn biểu đồ chẩn đoán phần dư của Mô hình 3}
-        \label{fig:model3-diagnostics}
-        \end{figure}
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\caption{Kết quả ước lượng hệ số và kiểm định $t$ của Mô hình 3}
+\label{tab:he-so-model3}
+\begin{tabularx}{\textwidth}{@{}X r r r p{2.5cm}@{}}
+\toprule
+\textbf{Biến độc lập} & \textbf{Estimate} & \textbf{SE} & \textbf{$t$} & \textbf{$p$-value} \\
+\midrule
+\texttt{(Intercept)} & 5.717087 & 0.221418 & 25.820 & $<2\times10^{-16}$ (***) \\
+\texttt{log(Max\_Power)} & 0.112752 & 0.010825 & 10.416 & $<2\times10^{-16}$ (***) \\
+\texttt{log(Memory\_Bandwidth)} & -0.042967 & 0.013054 & -3.291 & 0.00102 (**) \\
+\texttt{log(Memory)} & 0.031637 & 0.008037 & 3.936 & $8.68\times10^{-5}$ (***) \\
+\texttt{log(Memory\_Speed)} & 0.316397 & 0.023731 & 13.332 & $<2\times10^{-16}$ (***) \\
+\texttt{log(Memory\_Bus)} & -0.091692 & 0.016855 & -5.440 & $6.27\times10^{-8}$ (***) \\
+\texttt{log(Process)} & -0.369986 & 0.020130 & -18.379 & $<2\times10^{-16}$ (***) \\
+\texttt{log(ROPs)} & 0.090826 & 0.011932 & 7.612 & $4.91\times10^{-14}$ (***) \\
+\texttt{log(TMUs)} & -0.062690 & 0.014515 & -4.319 & $1.68\times10^{-5}$ (***) \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-        Năm quan sát có khoảng cách Cook lớn nhất lần lượt là 62 ($0.3867$), 61 ($0.3750$), 832 ($0.3145$), 323 ($0.1206$) và 326 ($0.1097$). Các điểm này được giữ lại trong phân tích; cần kiểm tra thêm trước khi quyết định loại bỏ.
+\textbf{Nhận xét:} Trong mô hình log-log, hệ số hồi quy biểu thị mức thay đổi phần trăm của biến phụ thuộc khi biến độc lập tăng $1\%$.
 
-        \subsubsection{Đánh giá dự báo trên tập kiểm tra}
+\begin{itemize}
+    \item \textbf{Đồng biến:} \texttt{Memory\_Speed}, \texttt{Max\_Power}, \texttt{ROPs} và \texttt{Memory}.
+    \item \textbf{Nghịch biến:} \texttt{Process}, \texttt{Memory\_Bus}, \texttt{TMUs} và \texttt{Memory\_Bandwidth}.
+    \item \textbf{Ý nghĩa thống kê:} Cả 8 biến đều có $p\text{-value}<0.01$.
+\end{itemize}
 
-        Với \texttt{set.seed(99)}, dữ liệu được chia ngẫu nhiên thành tập huấn luyện gồm 1.412 quan sát (70\%) và tập kiểm tra gồm 606 quan sát (30\%). Mô hình 3 được khớp trên tập huấn luyện; dự báo được đổi ngược về MHz trước khi tính các chỉ số.
+\textbf{Kết luận:} \texttt{Memory\_Speed} và \texttt{Process} có hệ số tác động lớn nhất về độ lớn, lần lượt là $0.316397$ và $-0.369986$.
 
-        \begin{table}[H]
-        \centering
-        \scriptsize
-        \renewcommand{\arraystretch}{1.2}
-        \begin{tabularx}{0.82\textwidth}{@{}X r@{}}
-        \toprule
-        \textbf{Chỉ số trên tập kiểm tra} & \textbf{Giá trị} \\
-        \midrule
-        MAE & 92.93 MHz \\
-        MSE & 16{,}225.32 MHz$^2$ \\
-        RMSE & 127.38 MHz \\
-        $R^2$ & 0.7476 \\
-        MAPE & 9.95\% \\
-        \bottomrule
-        \end{tabularx}
-        \caption{Hiệu quả dự báo của Mô hình 3 trên tập kiểm tra ($n=606$)}
-        \label{tab:holdout-metrics}
-        \end{table}
+\subsubsection{Kiểm tra đa cộng tuyến (Chỉ số VIF)}
 
-        Trên tập kiểm tra, mô hình đạt $R^2=0.7476$ và MAPE $=9.95\%$. Đây là kết quả đánh giá trên một lần chia ngẫu nhiên có đặt seed, nên phản ánh hiệu quả trên phép chia này; các lần chia khác có thể cho kết quả khác.
+Nhóm sử dụng chỉ số VIF để đánh giá đa cộng tuyến giữa các biến độc lập. Kết quả được trình bày trong Bảng~\ref{tab:vif-model3}.
 
-        \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.72\textwidth]{statisticPros/prediction_test.png}
-        \caption{Giá trị thực tế và dự báo \texttt{Core\_Speed} trên tập kiểm tra}
-        \label{fig:prediction-test}
-        \end{figure}
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\caption{Hệ số VIF của các biến độc lập trong Mô hình 3}
+\label{tab:vif-model3}
+\begin{tabularx}{\textwidth}{@{}p{3.1cm} c p{2.5cm} X@{}}
+\toprule
+\textbf{Biến độc lập} & \textbf{VIF} & \textbf{Mức độ} & \textbf{Liên hệ kỹ thuật} \\
+\midrule
+\texttt{log(Memory\_Bandwidth)} & 14.27 & Cao & Liên quan đến \texttt{Memory\_Speed} và \texttt{Memory\_Bus} \\
+\texttt{log(TMUs)} & 11.76 & Cao & Tương quan với \texttt{ROPs} và \texttt{Max\_Power} \\
+\texttt{log(Memory\_Bus)} & 7.31 & Trung bình--cao & Liên quan đến băng thông bộ nhớ \\
+\texttt{log(ROPs)} & 7.27 & Trung bình--cao & Tương quan với \texttt{TMUs} và TDP \\
+\texttt{log(Max\_Power)} & 6.73 & Trung bình--cao & Phản ánh quy mô tài nguyên GPU \\
+\texttt{log(Memory\_Speed)} & 4.54 & Chấp nhận được & Liên quan đến băng thông bộ nhớ \\
+\texttt{log(Memory)} & 2.76 & Thấp & Ít đa cộng tuyến \\
+\texttt{log(Process)} & 2.74 & Thấp & Ước lượng tương đối ổn định \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-        \subsubsection{Kết luận}
+\textbf{Nhận xét:} Theo Bảng~\ref{tab:vif-model3}, \texttt{Memory\_Bandwidth} và \texttt{TMUs} có VIF lần lượt là $14.27$ và $11.76$, cho thấy đa cộng tuyến cao. Hiện tượng này có thể làm thay đổi dấu và độ ổn định của các hệ số hồi quy riêng phần.
 
-        Trong ba mô hình được so sánh, Mô hình 3 có mức độ phù hợp cao nhất theo $R^2$ hiệu chỉnh. Kết quả holdout cho thấy khả năng dự báo tương đối tốt trên tập kiểm tra. Tuy nhiên, kiểm định phần dư phát hiện phương sai thay đổi và sai lệch chuẩn; VIF cũng cho thấy đa cộng tuyến ở một số biến. Vì vậy, kết quả nên được trình bày như các mối liên hệ và dự báo trong bộ dữ liệu, đồng thời cần thận trọng khi suy rộng hoặc diễn giải các hệ số như tác động nhân quả.
+\subsection{Đồ thị biểu thị sai số hồi quy và kiểm tra giả định mô hình}
 
-        Các bước tiền xử lý, ANOVA, hồi quy, chẩn đoán và đánh giá holdout được tổng hợp trong tệp mã nguồn \texttt{BTL\_XSTK\_full.R}.
+Nhóm sử dụng 4 biểu đồ chẩn đoán và các kiểm định Shapiro-Wilk, Breusch-Pagan, Durbin-Watson và Cook's Distance. Kết quả tổng hợp trong Bảng~\ref{tab:tong-hop-gia-dinh}.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\caption{Tổng hợp kết quả kiểm tra giả định hồi quy ($n=1{,}420$)}
+\label{tab:tong-hop-gia-dinh}
+\begin{tabularx}{\textwidth}{@{}p{2.5cm}p{2.6cm}X p{2.5cm}@{}}
+\toprule
+\textbf{Giả định} & \textbf{Kiểm định} & \textbf{Kết quả} & \textbf{Đánh giá} \\
+\midrule
+Tuyến tính và kỳ vọng sai số 0 & Residuals vs Fitted & Mean phần dư $=1.42\times10^{-12}$ & Tương đối tốt \\
+Chuẩn của phần dư & Q-Q Plot; Shapiro-Wilk & $W=0.9265$; $p=8.51\times10^{-26}$ & Sai lệch ở hai đuôi \\
+Phương sai đồng nhất & Scale-Location; Breusch-Pagan & $BP=231.45$; $p=1.46\times10^{-45}$ & Có phương sai thay đổi \\
+Độc lập sai số & Durbin-Watson & $DW=1.1153$ & Cần thận trọng \\
+Điểm ảnh hưởng & Cook's Distance & $\max D=0.6032$ (điểm 51) & Không có điểm $D>1$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Residuals vs Fitted}
+
+Kết quả kiểm tra tính tuyến tính và kỳ vọng sai số được thể hiện trong Hình~\ref{fig:regression-diagnostics}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.70\textwidth]{statisticPros/model3_diagnostics.png}
+\caption{Bốn biểu đồ chẩn đoán phần dư của Mô hình 3}
+\label{fig:regression-diagnostics}
+\end{figure}
+
+\textbf{Nhận xét:} Theo Hình~\ref{fig:regression-diagnostics}, phần dư phân bố quanh đường 0 và đường LOESS tương đối nằm ngang, cho thấy tính tuyến tính được đáp ứng tương đối tốt. Các ngoại lệ gồm điểm 51, 52 và 293.
+
+\subsubsection{Q-Q Residuals và kiểm định Shapiro-Wilk}
+
+Giả thuyết kiểm định:
+
+\[
+H_0:\text{Phần dư có phân phối chuẩn}
+\]
+
+\[
+H_1:\text{Phần dư không có phân phối chuẩn}
+\]
+
+Kết quả được minh họa trong Hình~\ref{fig:regression-diagnostics}.
+
+\textbf{Nhận xét:} Kiểm định cho $W=0.9265$ và $p=8.51\times10^{-26}<0.05$, nên bác bỏ $H_0$. Phần lớn điểm bám sát đường chuẩn ở vùng trung tâm, nhưng sai lệch xuất hiện tại hai đuôi, đặc biệt ở các điểm 51, 52 và 293.
+
+\subsubsection{Scale-Location và kiểm định Breusch-Pagan}
+
+Giả thuyết kiểm định:
+
+\[
+H_0:\text{Phương sai sai số không đổi}
+\]
+
+\[
+H_1:\text{Phương sai sai số thay đổi}
+\]
+
+Kết quả được thể hiện trong Hình~\ref{fig:regression-diagnostics}.
+
+\textbf{Nhận xét:} Đường xu hướng tương đối nằm ngang, không có hình phễu rõ rệt. Tuy nhiên, kiểm định Breusch-Pagan cho $BP=231.45$, $df=8$ và $p=1.46\times10^{-45}<0.05$, cho thấy tồn tại phương sai thay đổi. Có thể sử dụng Robust Standard Errors để tăng độ tin cậy của suy luận.
+
+\subsubsection{Durbin-Watson và Residuals vs Leverage}
+
+Hình~\ref{fig:regression-diagnostics} và Bảng~\ref{tab:cooks-distance} thể hiện các quan sát có ảnh hưởng lớn đến mô hình.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt}
+\caption{Top 5 quan sát có khoảng cách Cook lớn nhất}
+\label{tab:cooks-distance}
+\begin{tabularx}{\textwidth}{@{}c c c c X@{}}
+\toprule
+\textbf{Quan sát} & \textbf{Cook's D} & \textbf{Leverage} & \textbf{Phần dư chuẩn hóa} & \textbf{Thực tế / Dự đoán (MHz)} \\
+\midrule
+51 & 0.6032 & 0.0728 & -8.3128 & 300.0 / 928.57 \\
+52 & 0.5930 & 0.0520 & -9.8654 & 200.0 / 776.05 \\
+626 & 0.3751 & 0.1493 & +4.3853 & 820.0 / 463.30 \\
+293 & 0.1389 & 0.0588 & +4.4717 & 1000.0 / 542.07 \\
+296 & 0.1257 & 0.0541 & +4.4448 & 1050.0 / 570.41 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Nhận xét:} Thống kê Durbin-Watson đạt $DW=1.1153$. Hai điểm 51 và 52 có Cook's Distance vượt ngưỡng 0.5; điểm 626 có độ đòn bẩy cao nhất ($h=0.1493$). Tuy nhiên, không có quan sát nào vượt Cook's Distance bằng 1.
+
+\subsection{Dự đoán giá trị dựa vào mô hình hồi quy và đánh giá hiệu quả}
+
+\subsubsection{Đối chiếu giá trị thực tế và dự đoán}
+
+Nhóm sử dụng hàm \texttt{predict()} để dự đoán $\log(\texttt{Core\_Speed})$ và quy đổi về MHz bằng hàm mũ. Kết quả 10 quan sát đầu được trình bày trong Bảng~\ref{tab:du-doan-10-dong}.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\caption{So sánh giá trị thực tế và dự đoán của 10 quan sát đầu}
+\label{tab:du-doan-10-dong}
+\begin{tabularx}{\textwidth}{@{}c c c X X@{}}
+\toprule
+\textbf{STT} & \textbf{Thực tế (log)} & \textbf{Dự đoán (log)} & \textbf{Thực tế / Dự đoán (MHz)} & \textbf{Sai số tuyệt đối (\%)} \\
+\midrule
+1 & 6.6039 & 6.5013 & 738 / 665.9789 & 72.0211 (9.76\%) \\
+2 & 6.7685 & 6.5698 & 870 / 713.2559 & 156.7441 (18.02\%) \\
+3 & 6.4770 & 6.7428 & 650 / 847.9280 & 197.9280 (30.45\%) \\
+4 & 6.5596 & 6.9357 & 706 / 1028.3643 & 322.3643 (45.66\%) \\
+5 & 6.9565 & 6.8164 & 1050 / 912.6900 & 137.3100 (13.08\%) \\
+6 & 6.7298 & 6.9204 & 837 / 1012.7235 & 175.7235 (20.99\%) \\
+7 & 6.5582 & 6.9957 & 705 / 1091.9549 & 386.9549 (54.89\%) \\
+8 & 7.0388 & 7.0572 & 1140 / 1161.1892 & 21.1892 (1.86\%) \\
+9 & 6.9078 & 7.1156 & 1000 / 1231.0480 & 231.0480 (23.10\%) \\
+10 & 6.9078 & 7.0572 & 1000 / 1161.1892 & 161.1892 (16.12\%) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Đánh giá trên tập Train/Test (70:30)}
+
+Dữ liệu được chia thành 70\% tập huấn luyện ($n=993$) và 30\% tập kiểm tra ($n=427$) với \texttt{set.seed(99)}. Các chỉ số MAE, MSE, RMSE, $R^2$ và MAPE được tổng hợp trong Bảng~\ref{tab:chi-so-du-bao}.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\caption{Các chỉ số đánh giá hiệu quả dự báo của Mô hình 3}
+\label{tab:chi-so-du-bao}
+\begin{tabularx}{\textwidth}{@{}X r r r p{2.3cm}@{}}
+\toprule
+\textbf{Tập đánh giá và thang đo} & \textbf{MAE} & \textbf{MSE} & \textbf{RMSE} & \textbf{$R^2$ (MAPE)} \\
+\midrule
+Toàn mẫu ($n=1{,}420$) -- log & 0.0997 & 0.0198 & 0.1407 & 0.7354 (--) \\
+Toàn mẫu -- MHz & 89.36 & 14844.36 & 121.84 & 0.7657 (10.28\%) \\
+Tập Test ($n=427$) -- log & 0.0998 & 0.0190 & 0.1380 & 0.7473 (--) \\
+Tập Test -- MHz & 89.86 & 15714.29 & 125.36 & 0.7597 (9.95\%) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Kết quả dự báo trên tập Test được minh họa trong Hình~\ref{fig:actual-vs-predicted}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.70\textwidth]{statisticPros/prediction_test.png}
+\caption{So sánh giá trị thực tế và dự báo trên tập Test ($n=427$)}
+\label{fig:actual-vs-predicted}
+\end{figure}
+
+\textbf{Nhận xét:} Theo Bảng~\ref{tab:chi-so-du-bao} và Hình~\ref{fig:actual-vs-predicted}, mô hình đạt $R^2=0.7597$, MAE $=89.86$ MHz, RMSE $=125.36$ MHz và MAPE $=9.95\%$ trên tập Test. Kết quả dự báo tương đối sát giá trị thực tế, đặc biệt trong khoảng 500--1.300 MHz.
+
+\textbf{Kết luận:} Mô hình giải thích khoảng 75\% biến thiên xung nhịp GPU và đạt MAPE dưới 10\% trên tập Test. Có thể nghiên cứu Random Forest hoặc các phương pháp xử lý đa cộng tuyến để cải thiện kết quả.
+
+\subsubsection{Mã nguồn R xây dựng và đánh giá mô hình}
+
+\begin{lstlisting}
+# Pipeline for the reported regression results (N = 1,420)
+raw_data <- read.csv("../data/All_GPUs.csv",
+                     na.strings = c("\n-", "-", "None", "", "NA"))
+selected_cols <- c("Core_Speed", "Max_Power", "Memory", "Memory_Bandwidth",
+                   "Memory_Bus", "Memory_Speed", "Process", "ROPs", "TMUs")
+extract_numeric <- function(x) {
+  as.numeric(stringr::str_extract(as.character(x), "[0-9.]+"))
+}
+regression_data <- raw_data[, selected_cols]
+for (col in selected_cols) {
+  regression_data[[col]] <- sapply(regression_data[[col]], extract_numeric)
+}
+regression_data <- dplyr::distinct(stats::na.omit(regression_data))
+log_data <- log(regression_data)
+
+Model1 <- lm(Core_Speed ~ Memory_Bandwidth + Memory + Memory_Speed +
+               Memory_Bus + Process + ROPs + TMUs, data = regression_data)
+Model2 <- lm(Core_Speed ~ Memory_Bandwidth + Memory + Memory_Bus +
+               Process + ROPs + TMUs, data = regression_data)
+Model3 <- lm(Core_Speed ~ Max_Power + Memory_Bandwidth + Memory +
+               Memory_Speed + Memory_Bus + Process + ROPs + TMUs,
+             data = log_data)
+summary(Model1)
+summary(Model2)
+summary(Model3)
+car::vif(Model3)
+
+set.seed(99)
+n <- nrow(log_data)
+train_idx <- sample(1:n, size = 0.7 * n)
+train_log <- log_data[train_idx, ]
+test_log <- log_data[-train_idx, ]
+Model3_tr <- lm(Core_Speed ~ Max_Power + Memory_Bandwidth + Memory +
+                  Memory_Speed + Memory_Bus + Process + ROPs + TMUs,
+                data = train_log)
+pred_mhz <- exp(predict(Model3_tr, newdata = test_log))
+act_mhz <- exp(test_log$Core_Speed)
+error_mhz <- act_mhz - pred_mhz
+MAE <- mean(abs(error_mhz))
+MSE <- mean(error_mhz^2)
+RMSE <- sqrt(MSE)
+R2 <- 1 - sum(error_mhz^2) / sum((act_mhz - mean(act_mhz))^2)
+MAPE <- mean(abs(error_mhz / act_mhz)) * 100
+data.frame(MAE, MSE, RMSE, R2, MAPE)
+\end{lstlisting}

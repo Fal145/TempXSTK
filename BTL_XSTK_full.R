@@ -67,6 +67,16 @@ extract_numeric <- function(val) {
   return(as.numeric(num))
 }
 
+# Giữ riêng quy trình dữ liệu đã dùng cho các kết quả hồi quy của nhóm.
+# Quy trình này tạo tập 1.420 dòng để tái lập các bảng Model 1--3 đã báo cáo.
+df_regression_legacy <- df_raw[, selected_cols]
+for (col in selected_cols) {
+  df_regression_legacy[[col]] <- sapply(df_regression_legacy[[col]], extract_numeric)
+}
+df_regression_legacy <- na.omit(df_regression_legacy)
+df_regression_legacy <- distinct(df_regression_legacy)
+rownames(df_regression_legacy) <- NULL
+
 parse_bandwidth <- function(val) {
   str_val <- as.character(val)
   num <- as.numeric(str_extract(str_val, "[0-9.]+"))
@@ -125,6 +135,8 @@ rownames(df_clean) <- NULL
 
 cat(sprintf("Kích thước bộ dữ liệu SẠCH hoàn chỉnh: %d dòng x %d cột\n\n",
             nrow(df_clean), ncol(df_clean)))
+cat(sprintf("Tập hồi quy theo pipeline đã dùng trong kết quả nhóm: %d dòng\n",
+            nrow(df_regression_legacy)))
 cat("Bảng dữ liệu sạch 100% sẵn sàng cho bước Thống kê:\n")
 print(head(df_clean, 7))
 
@@ -265,7 +277,9 @@ print(TukeyHSD(model_aov))
 print(oneway.test(Core_Speed ~ Manufacturer, data = data_anova, var.equal = FALSE))
 
 # --- 3.2. Xây dựng và so sánh 3 mô hình hồi quy ---
-df <- df_clean
+# Dùng đúng tập hồi quy 1.420 dòng trong kết quả của nhóm.
+df <- df_regression_legacy
+df_reg_log <- log(df)
 
 Model1 <- lm(
   Core_Speed ~ Memory_Bandwidth + Memory + Memory_Speed +
@@ -282,7 +296,7 @@ Model2 <- lm(
 Model3 <- lm(
   Core_Speed ~ Max_Power + Memory_Bandwidth + Memory +
     Memory_Speed + Memory_Bus + Process + ROPs + TMUs,
-  data = df_log
+  data = df_reg_log
 )
 
 summary(Model1)
@@ -305,10 +319,10 @@ dwtest(Model3)
 sort(cooks.distance(Model3), decreasing = TRUE)[1:5]
 
 # --- 3.4. Dự đoán trên toàn bộ mẫu ---
-pred_log <- predict(Model3, newdata = df_log)
+pred_log <- predict(Model3, newdata = df_reg_log)
 
 comparison_table <- data.frame(
-  Actual_log = df_log$Core_Speed,
+  Actual_log = df_reg_log$Core_Speed,
   Predicted_log = pred_log,
   Actual_MHz = df$Core_Speed,
   Predicted_MHz = exp(pred_log)
@@ -318,11 +332,11 @@ head(comparison_table, 10)
 
 # --- 3.5. Đánh giá trên tập Train/Test (70:30) ---
 set.seed(99)
-n <- nrow(df_log)
+n <- nrow(df_reg_log)
 
-train_idx <- sample(seq_len(n), size = floor(0.7 * n))
-train_log <- df_log[train_idx, ]
-test_log <- df_log[-train_idx, ]
+train_idx <- sample(1:n, size = 0.7 * n)
+train_log <- df_reg_log[train_idx, ]
+test_log <- df_reg_log[-train_idx, ]
 
 Model3_tr <- lm(
   Core_Speed ~ Max_Power + Memory_Bandwidth + Memory +
