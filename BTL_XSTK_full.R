@@ -142,7 +142,7 @@ df_log <- log(df_clean)
 hist_orig_list <- list()
 
 for (col in selected_cols) {
-  p <- ggplot(df_clean, aes_string(x = col)) +
+  p <- ggplot(df_clean, aes(x = .data[[col]])) +
     geom_histogram(fill = "gray70", color = "black", bins = 30) +
     labs(title = paste("Histogram of", col), x = col, y = "Frequency") +
     theme_minimal() +
@@ -162,7 +162,7 @@ dev.off()
 hist_log_list <- list()
 
 for (col in selected_cols) {
-  p <- ggplot(df_log, aes_string(x = col)) +
+  p <- ggplot(df_log, aes(x = .data[[col]])) +
     geom_histogram(fill = "gray85", color = "black", bins = 30) +
     labs(
       title = paste0("Histogram of log(", col, ")"),
@@ -187,7 +187,7 @@ feature_cols <- setdiff(selected_cols, "Core_Speed")
 scatter_log_list <- list()
 
 for (col in feature_cols) {
-  p <- ggplot(df_log, aes_string(x = col, y = "Core_Speed")) +
+  p <- ggplot(df_log, aes(x = .data[[col]], y = .data[["Core_Speed"]])) +
     geom_point(color = "orange", alpha = 0.6, size = 1.5) +
     labs(
       title = paste0("Scatter Plot of log(", col, ") with log(Core_Speed)"),
@@ -291,9 +291,12 @@ summary(Model3)
 vif(Model3)
 
 # --- 3.3. Kiểm tra các giả định hồi quy ---
+png(file.path(img_pros_dir, "model3_diagnostics.png"),
+    width = 10, height = 8, units = "in", res = 300)
 par(mfrow = c(2, 2))
 plot(Model3)
 par(mfrow = c(1, 1))
+dev.off()
 
 mean(residuals(Model3))
 shapiro.test(residuals(Model3))
@@ -339,6 +342,8 @@ MAPE <- mean(abs(err_mhz / act_mhz)) * 100
 
 print(data.frame(MAE = MAE, MSE = MSE, RMSE = RMSE, R2 = R2, MAPE = MAPE))
 
+png(file.path(img_pros_dir, "prediction_test.png"),
+    width = 8, height = 6, units = "in", res = 300)
 plot(
   act_mhz, pred_mhz,
   pch = 19,
@@ -347,3 +352,4 @@ plot(
   main = "Thuc te vs Du bao (Test)"
 )
 abline(0, 1, lty = 2, col = "red")
+dev.off()
